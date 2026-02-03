@@ -20,10 +20,10 @@ raw_documents = loader.load()
 # splitting the document
 
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=300,
-    chunk_overlap=100,
-    length_function=len,
-    is_separator_regex=False,
+  chunk_size=300,
+  chunk_overlap=100,
+  length_function=len,
+  is_separator_regex=False,
 )
 
 chunks = text_splitter.split_documents(raw_documents)
@@ -37,17 +37,17 @@ ids = []
 i = 0
 
 for chunk in chunks:
-    documents.append(chunk.page_content)
-    ids.append("ID"+str(i))
-    metadata.append(chunk.metadata)
+  documents.append(chunk.page_content)
+  ids.append("ID"+str(i))
+  metadata.append(chunk.metadata)
 
-    i += 1
+  i += 1
 
 # adding to chromadb
 
 
 collection.upsert(
-    documents=documents,
-    metadatas=metadata,
-    ids=ids
+  documents=documents,
+  metadatas=metadata,
+  ids=ids
 )

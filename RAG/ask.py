@@ -1,5 +1,6 @@
 import chromadb
-from openai import OpenAI
+import os
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,24 +15,24 @@ chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 collection = chroma_client.get_or_create_collection(name="growing_vegetables")
 
 
-user_query = input("What do you want to know about growing vegetables?\n\n")
+user_query = input("What do you want to know about vegetables?\n\n")
 
 results = collection.query(
-    query_texts=[user_query],
-    n_results=1
+  query_texts=[user_query],
+  n_results=1
 )
 
 #print(results['documents'])
 #print(results['metadatas'])
 
-client = OpenAI()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 system_prompt = """
-You are a helpful assistant. You answer questions about growing vegetables in Florida. 
+You are a helpful assistant. You answer questions about how fruits and vegetables healthy on human life. 
 But you only answer based on knowledge I'm providing you. You don't use your internal 
 knowledge and you don't make thins up.
 
-If you don't know the answer, just say: I don't know
+If you don't know the answer, just say: I don't know 
 
 --------------------
 
@@ -43,14 +44,13 @@ The data:
 
 #print(system_prompt)
 
-response = client.chat.completions.create(
-    model="gpt-4o",
-    messages = [
-        {"role":"system","content":system_prompt},
-        {"role":"user","content":user_query}    
-    ]
+model = genai.GenerativeModel(
+  model_name="gemma3-12b",
+  system_instruction=system_prompt
 )
+
+response = model.generate_content(user_query)
 
 print("\n\n---------------------\n\n")
 
-print(response.choices[0].message.content)
+print(response.text)
