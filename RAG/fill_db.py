@@ -2,23 +2,20 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import chromadb
 
-# setting the environment
-
+# Setting the environment
 DATA_PATH = r"data"
 CHROMA_PATH = r"chroma_db"
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
-
 collection = chroma_client.get_or_create_collection(name="mitre_attack")
 
-# loading the document
 
+# Loading the document
 loader = PyPDFDirectoryLoader(DATA_PATH)
-
 raw_documents = loader.load()
 
-# splitting the document
 
+# Splitting the document
 text_splitter = RecursiveCharacterTextSplitter(
   chunk_size=300,
   chunk_overlap=100,
@@ -28,8 +25,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 chunks = text_splitter.split_documents(raw_documents)
 
-# preparing to be added in chromadb
 
+# Preparing to be added in chromadb
 documents = []
 metadata = []
 ids = []
@@ -43,9 +40,8 @@ for chunk in chunks:
 
   i += 1
 
-# adding to chromadb
 
-
+# Adding to chromadb
 collection.upsert(
   documents=documents,
   metadatas=metadata,

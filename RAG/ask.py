@@ -3,20 +3,16 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv() 
 
-# setting the environment
-
+# Setting the environment 
 DATA_PATH = r"data"
 CHROMA_PATH = r"chroma_db"
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
-
 collection = chroma_client.get_or_create_collection(name="mitre_attack")
 
-
 user_query = input("What do you want to know about Mitre attack?\n\n")
-
 results = collection.query(
   query_texts=[user_query],
   n_results=5
@@ -36,7 +32,6 @@ Page: {meta.get('page')}
 
 {doc}
 """
-
 
 system_prompt = f"""
 You are a helpful assistant.
