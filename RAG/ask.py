@@ -1,6 +1,5 @@
 import chromadb
-import os
-import google.generativeai as genai
+import os 
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -13,33 +12,45 @@ CHROMA_PATH = r"chroma_db"
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
-collection = chroma_client.get_or_create_collection(name="growing_vegetables")
+collection = chroma_client.get_or_create_collection(name="mitre_attack")
 
 
-user_query = input("What do you want to know about vegetables?\n\n")
+user_query = input("What do you want to know about Mitre attack?\n\n")
 
 results = collection.query(
   query_texts=[user_query],
-  n_results=1
+  n_results=5
 )
 
 #print(results['documents'])
 #print(results['metadatas']) 
 
-system_prompt = """
-You are a helpful assistant. You answer questions about how fruits and vegetables healthy on human life. 
-But you only answer based on knowledge I'm providing you. You don't use your internal 
-knowledge and you don't make thins up.
+context = "" 
+for i, (doc, meta) in enumerate(
+  zip(results["documents"][0], results["metadatas"][0])
+):
+  context += f"""
+SOURCE {i+1}
+File: {meta.get('source')}
+Page: {meta.get('page')}
 
-If you don't know the answer, just say: I don't know 
+{doc}
+"""
+
+
+system_prompt = f"""
+You are a helpful assistant.
+You answer questions about Mitre Attacks.
+
+IMPORTANT RULES:
+- Use ONLY the information in the SOURCES below.
+- Do NOT use your own knowledge.
+- If the answer is not in the sources, say: "I don't know".
 
 --------------------
-
-The data:
-
-"""+str(results['documents'])+"""
-
-"""
+SOURCES:
+{context}
+""" 
 
 #print(system_prompt)
 

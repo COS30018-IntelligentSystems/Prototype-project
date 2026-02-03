@@ -9,7 +9,7 @@ CHROMA_PATH = r"chroma_db"
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
-collection = chroma_client.get_or_create_collection(name="growing_vegetables")
+collection = chroma_client.get_or_create_collection(name="mitre_attack")
 
 # loading the document
 
