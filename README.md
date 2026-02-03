@@ -1,5 +1,7 @@
 ## Cyber Threat Explainer Agent – Prototype (V1)
 
+### 104988294 – Do Gia Huy
+
 This prototype is an individual research project developed prior to the full COS30018 Option D group assignment.  
 It focuses on building a small, well-defined **LLM-powered autonomous agent** to understand core concepts such as agent reasoning, tool usage, and Retrieval-Augmented Generation (RAG).
 
@@ -104,3 +106,4 @@ The prototype is designed as a foundation for future extension into a multi-agen
 Additional agents can be introduced later without changing the core flow or architecture.
 
 ---
+
