@@ -1,6 +1,7 @@
 import chromadb
 import os
 import google.generativeai as genai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,9 +24,7 @@ results = collection.query(
 )
 
 #print(results['documents'])
-#print(results['metadatas'])
-
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+#print(results['metadatas']) 
 
 system_prompt = """
 You are a helpful assistant. You answer questions about how fruits and vegetables healthy on human life. 
@@ -44,13 +43,19 @@ The data:
 
 #print(system_prompt)
 
-model = genai.GenerativeModel(
-  model_name="gemma3-12b",
-  system_instruction=system_prompt
+client = OpenAI(
+  api_key=os.getenv("OPENROUTER_API_KEY"),
+  base_url="https://openrouter.ai/api/v1"
 )
 
-response = model.generate_content(user_query)
+response = client.chat.completions.create(
+  model="arcee-ai/trinity-large-preview:free",  
+  messages=[
+    {"role": "system", "content": system_prompt},
+    {"role": "user", "content": user_query}
+  ]
+)
 
 print("\n\n---------------------\n\n")
 
-print(response.text)
+print(response.choices[0].message.content)
