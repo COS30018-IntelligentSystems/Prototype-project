@@ -1,13 +1,29 @@
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter
+from openai import OpenAI
+from chromadb.utils import embedding_functions
+from dotenv import load_dotenv
 import chromadb
+import os
 
-# Setting the environment
+load_dotenv()
+
+# Setting the Embeddings model
+googleai_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
+  api_key=os.getenv("GOOGLE_API_KEY"),
+  model_name="text-embedding-004"
+)
+
+
+# Setting the environment for local usage
 DATA_PATH = "data"
 CHROMA_PATH = r"chroma_db"
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
-collection = chroma_client.get_or_create_collection(name="mitre_attack")
+collection = chroma_client.get_or_create_collection(
+  name="mitre_attack",
+  embedding_function=googleai_ef
+)
 
 
 # Loading the documents
@@ -49,3 +65,13 @@ collection.upsert(
   metadatas=metadata,
   ids=ids
 )
+
+
+# Quick verifying
+collection = chroma_client.get_or_create_collection(
+  name="mitre_attack",
+  embedding_function=googleai_ef
+)
+
+print(f"Embedding function: {type(collection._embedding_function).__name__}")
+print(f"Model: {getattr(collection._embedding_function, '_model_name', 'N/A')}")
