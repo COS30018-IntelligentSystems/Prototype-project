@@ -107,3 +107,24 @@ Additional agents can be introduced later without changing the core flow or arch
 
 ---
 
+## Running Instructions
+
+1. Install the required dependencies. NOTE: numpy might not work for new Python version:
+```bash
+pip install -r requirements.txt
+```
+
+2. Create and populate the vector database:
+```bash
+python fill_db.py
+```
+
+3. Run the agent and ask questions related to MITRE ATT&CK:
+```bash
+python ask.py
+```
+
+If the agent cannot find relevant information in the RAG database, it will return:
+```bash
+I don't know
+```
