@@ -1,0 +1,18 @@
+# T1602 - Data from Configuration Repository
+
+**Matrix:** Enterprise
+
+**Tactics:** Collection
+
+## Description
+
+Adversaries may collect data related to managed devices from configuration repositories. Configuration repositories are used by management systems in order to configure, manage, and control data on remote systems. Configuration repositories may also facilitate remote access and administration of devices. Adversaries may target these repositories in order to collect large quantities of sensitive system administration data. Data from configuration repositories may be exposed by various protocols and software and can store a wide variety of data, much of which may align with adversary Discovery objectives.(Citation: US-CERT-TA18-106A)(Citation: US-CERT TA17-156A SNMP Abuse 2017)
+
+## Platforms
+
+Network Devices
+
+## References
+
+- [https://attack.mitre.org/techniques/T1602](https://attack.mitre.org/techniques/T1602)
+
