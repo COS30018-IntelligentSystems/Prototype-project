@@ -1,6 +1,5 @@
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter
-from openai import OpenAI
 from chromadb.utils import embedding_functions
 from dotenv import load_dotenv
 import chromadb

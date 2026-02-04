@@ -1,18 +1,29 @@
 import chromadb
 import os 
+from chromadb.utils import embedding_functions
 from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv() 
+
+# Setting the Embeddings model
+googleai_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
+  api_key=os.getenv("GOOGLE_API_KEY"),
+  model_name="text-embedding-004"
+)
+
 
 # Setting the environment 
 DATA_PATH = r"data"
 CHROMA_PATH = r"chroma_db"
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
-collection = chroma_client.get_or_create_collection(name="mitre_attack")
+collection = chroma_client.get_or_create_collection(
+  name="mitre_attack",
+  embedding_function=googleai_ef
+)
 
-user_query = input("What do you want to know about Mitre attack?\n\n")
+user_query = input("What do you want to know about Mitre attack?\n\n").lower().strip()
 results = collection.query(
   query_texts=[user_query],
   n_results=5
