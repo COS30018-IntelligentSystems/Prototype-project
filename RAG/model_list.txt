@@ -1,0 +1,12 @@
+openai/gpt-oss-20b:free
+google/gemma-3-27b-it:free
+upstage/solar-pro-3:free       (good - but going away on March 2, 2026)
+nvidia/nemotron-3-nano-30b-a3b:free
+
+
+
+------------
+
+
+
+TEST UNKNOWN CASE: "T1489 - Service Stop"

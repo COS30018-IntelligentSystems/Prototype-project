@@ -31,6 +31,7 @@ results = collection.query(
 
 #print(results['documents'])
 #print(results['metadatas']) 
+#print(results['distances']) 
 
 context = "" 
 for i, (doc, meta) in enumerate(
@@ -60,19 +61,27 @@ SOURCES:
 
 #print(system_prompt)
 
-client = OpenAI(
-  api_key=os.getenv("OPENROUTER_API_KEY"),
-  base_url="https://openrouter.ai/api/v1"
-)
 
-response = client.chat.completions.create(
-  model="arcee-ai/trinity-large-preview:free",  
-  messages=[
-    {"role": "system", "content": system_prompt},
-    {"role": "user", "content": user_query}
-  ]
-)
+# Answer with distance check 
+THRESHOLD = 0.7
+avg_distance = sum(results['distances'][0]) / len(results['distances'][0])
+if avg_distance > THRESHOLD:
+  print("Out of scope!")
+  print(f"(Similarity score: {results['distances'][0][0]:.3f}, threshold: {THRESHOLD})")
+else: 
+  client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1"
+  )
 
-print("\n\n---------------------\n\n")
+  response = client.chat.completions.create(
+    model="nvidia/nemotron-3-nano-30b-a3b:free",  
+    messages=[
+      {"role": "system", "content": system_prompt},
+      {"role": "user", "content": user_query}
+    ]
+  )
 
-print(response.choices[0].message.content)
+  print("\n\n---------------------\n\n")
+
+  print(response.choices[0].message.content)
