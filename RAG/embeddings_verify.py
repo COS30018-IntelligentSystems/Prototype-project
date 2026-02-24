@@ -1,14 +1,12 @@
-import chromadb
-import os
+import chromadb 
 from dotenv import load_dotenv
 from chromadb.utils import embedding_functions
 
 load_dotenv()
 
 # Setting the Embeddings model
-googleai_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
-  api_key=os.getenv("GOOGLE_API_KEY"),
-  model_name="text-embedding-004"
+sentence_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+	model_name="all-MiniLM-L6-v2"
 )
 
 
@@ -18,7 +16,7 @@ CHROMA_PATH = r"chroma_db"
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 collection = chroma_client.get_or_create_collection(
   name="mitre_attack",
-  embedding_function=googleai_ef
+  embedding_function=sentence_ef
 ) 
 
 

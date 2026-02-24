@@ -1,16 +1,11 @@
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter
-from chromadb.utils import embedding_functions
-from dotenv import load_dotenv
-import chromadb
-import os
+from chromadb.utils import embedding_functions 
+import chromadb  
 
-load_dotenv()
-
-# Setting the Embeddings model
-googleai_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
-  api_key=os.getenv("GOOGLE_API_KEY"),
-  model_name="gemini-embedding-001"
+# Setting the Embeddings model 
+sentence_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+	model_name="all-MiniLM-L6-v2"
 )
 
 
@@ -21,7 +16,7 @@ CHROMA_PATH = r"chroma_db"
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 collection = chroma_client.get_or_create_collection(
   name="mitre_attack",
-  embedding_function=googleai_ef
+  embedding_function=sentence_ef
 )
 
 
@@ -69,7 +64,7 @@ collection.upsert(
 # Quick verifying
 collection = chroma_client.get_or_create_collection(
   name="mitre_attack",
-  embedding_function=googleai_ef
+  embedding_function=sentence_ef
 )
 
 print(f"Embedding function: {type(collection._embedding_function).__name__}")

@@ -1,6 +1,7 @@
 import chromadb
 import os 
 import json
+import re
 from chromadb.utils import embedding_functions
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -8,9 +9,8 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 # Setting the Embeddings model
-googleai_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
-  api_key=os.getenv("GOOGLE_API_KEY"),
-  model_name="text-embedding-004"
+sentence_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+	model_name="all-MiniLM-L6-v2"
 )
 
 
@@ -21,7 +21,7 @@ CHROMA_PATH = r"chroma_db"
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 collection = chroma_client.get_or_create_collection(
   name="mitre_attack",
-  embedding_function=googleai_ef
+  embedding_function=sentence_ef
 )
 
 user_query = input("What do you want to know about Mitre attack?\n\n").lower().strip()
@@ -109,11 +109,19 @@ else:
   print("\n\n---------------------\n\n")
 
   # Transfer the JSON answer to readable format
-  raw_output = response.choices[0].message.content
-  
+  raw_output = response.choices[0].message.content.strip()
+
+  # Remove markdown code fences if present
+  raw_output = re.sub(r"^```json", "", raw_output)
+  raw_output = re.sub(r"^```", "", raw_output)
+  raw_output = re.sub(r"```$", "", raw_output)
+  raw_output = raw_output.strip()
+
   try:
     parsed = json.loads(raw_output)
-    print(json.dumps(parsed, intent=2))
-  except:
-    print("Model did not return valid JSON:")
+    print(json.dumps(parsed, indent=2))
+  except json.JSONDecodeError as e:
+    print("JSON parsing failed.")
+    print("Error:", e)
+    print("Raw output:")
     print(raw_output)
