@@ -10,7 +10,7 @@ load_dotenv()
 # Setting the Embeddings model
 googleai_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
   api_key=os.getenv("GOOGLE_API_KEY"),
-  model_name="text-embedding-004"
+  model_name="gemini-embedding-001"
 )
 
 

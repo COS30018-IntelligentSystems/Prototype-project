@@ -1,5 +1,6 @@
 import chromadb
 import os 
+import json
 from chromadb.utils import embedding_functions
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -26,7 +27,7 @@ collection = chroma_client.get_or_create_collection(
 user_query = input("What do you want to know about Mitre attack?\n\n").lower().strip()
 results = collection.query(
   query_texts=[user_query],
-  n_results=5
+  n_results=8
 )
 
 #print(results['documents'])
@@ -46,26 +47,43 @@ Page: {meta.get('page')}
 """
 
 system_prompt = f"""
-You are a helpful assistant.
-You answer questions about Mitre Attacks.
+You are a cybersecurity assistant specialized in MITRE ATT&CK techniques.
 
-IMPORTANT RULES:
-- Use ONLY the information in the SOURCES below.
-- Do NOT use your own knowledge.
-- If the answer is not in the sources, say: "I don't know".
+You MUST follow these rules:
+- Use ONLY the provided SOURCES.
+- Do NOT use external knowledge.
+- Extract information exactly as written.
+- If a section is missing, return "Not documented".
+
+IMPORTANT:
+- Output MUST be valid JSON.
+- Do NOT include explanations.
+- Do NOT include markdown.
+- Do NOT include text outside JSON.
+
+Return JSON in this exact format:
+
+{{
+  "technique_id": "",
+  "technique_name": "",
+  "tactic": "",
+  "description": "",
+  "detection": "",
+  "mitigations": ""
+}}
 
 --------------------
 SOURCES:
 {context}
-""" 
+"""
 
 #print(system_prompt)
 
 
 # Answer with distance check 
 THRESHOLD = 0.7
-avg_distance = sum(results['distances'][0]) / len(results['distances'][0])
-if avg_distance > THRESHOLD:
+best_distance = results['distances'][0][0]
+if best_distance > THRESHOLD:
   print("Out of scope!")
   print(f"(Similarity score: {results['distances'][0][0]:.3f}, threshold: {THRESHOLD})")
 else: 
@@ -77,11 +95,25 @@ else:
   response = client.chat.completions.create(
     model="nvidia/nemotron-3-nano-30b-a3b:free",  
     messages=[
-      {"role": "system", "content": system_prompt},
-      {"role": "user", "content": user_query}
+      {
+        "role": "system", 
+        "content": system_prompt
+      },
+      {
+        "role": "user", 
+        "content": f"Extract structured MITRE information for: {user_query}"
+      }
     ]
   )
 
   print("\n\n---------------------\n\n")
 
-  print(response.choices[0].message.content)
+  # Transfer the JSON answer to readable format
+  raw_output = response.choices[0].message.content
+  
+  try:
+    parsed = json.loads(raw_output)
+    print(json.dumps(parsed, intent=2))
+  except:
+    print("Model did not return valid JSON:")
+    print(raw_output)
