@@ -1,130 +1,104 @@
-## Cyber Threat Explainer Agent – Prototype (V1)
+## RAG-based cyber defence assistant
 
-### 104988294 – Do Gia Huy
+This project implements a retrieval-augmented generation (RAG) system focused on
+MITRE ATT&CK techniques and CTI enrichment (AlienVault OTX). It is organised as
+a small, production-lean Python package (`rag_system`) with a CLI interface and
+offline index build scripts.
 
-This prototype is an individual research project developed prior to the full COS30018 Option D group assignment.  
-It focuses on building a small, well-defined **LLM-powered autonomous agent** to understand core concepts such as agent reasoning, tool usage, and Retrieval-Augmented Generation (RAG).
+### Key components
 
----
+- **MITRE ingestion and index**
+  - Markdown MITRE ATT&CK files under `data/`.
+  - Ingestion pipeline in `rag_system/ingestion/`:
+    - `mitre_loader.py` – load and normalise metadata (technique ID & name).
+    - `chunking.py` – header-aware + size-controlled text splitting.
+    - `index_builder.py` – builds a ChromaDB collection with provenance and an
+      `ingestion_manifest.json` for traceability.
+- **Retriever**
+  - ChromaDB persistent store via `rag_system/retrieval/vector_store.py`.
+  - Query logic and optional filters in `rag_system/retrieval/retriever.py`.
+  - Simple reranker hook in `rag_system/retrieval/reranker.py`.
+- **LLM layer**
+  - OpenRouter-backed OpenAI client in `rag_system/llm/client.py`.
+  - Prompt templates in `rag_system/llm/prompts.py`.
+  - MITRE-aware answer generator in `rag_system/llm/mitre_answerer.py`.
+- **Agents and multi-agent routing**
+  - Input classification in `rag_system/agents/router.py`.
+  - Query rewriting in `rag_system/agents/query_rewriter.py`.
+  - MITRE RAG orchestration in `rag_system/agents/mitre_agent.py`.
+  - OTX CTI wrapper in `rag_system/agents/otx_agent.py`.
+  - Minimal in-memory history in `rag_system/agents/conversation_manager.py`.
+- **CLI and scripts**
+  - Interactive CLI in `rag_system/cli/main.py`.
+  - Index build / verify scripts under `scripts/`.
 
-## Agent Definition
+The high-level flow matches your RAG diagram: user input → router (input type) →
+query rewriter → global retriever (Chroma) → answerer → conversation manager →
+CLI response.
 
-**Agent Name (Conceptual):** Cyber Threat Explainer Agent  
+### Setup
 
-**Purpose:**  
-Explain cybersecurity threats and defensive concepts using curated Cyber Threat Intelligence (CTI) documents through a RAG-based approach.
+1. Create and activate a virtual environment.
+2. Install dependencies from `requirements.txt`:
 
-The agent is designed to analyse user queries, retrieve relevant security knowledge when required, and generate clear, structured explanations.
-
----
-
-## Agent Characteristics
-
-The prototype demonstrates agent behaviour through:  
-- Multi-step reasoning  
-- Intent-based routing  
-- Query reformulation for improved retrieval  
-- Intentional use of internal tools  
-
-This design reflects autonomous agent principles rather than simple prompt-based interaction.
-
----
-
-## High-Level Flow
-
-1. The agent receives a user query  
-2. The agent determines the intent of the query  
-3. The agent decides whether external CTI knowledge is required  
-4. If required:  
-   - The query is reformulated  
-   - Relevant CTI documents are retrieved  
-   - An explanation is synthesised  
-5. The agent returns a final response  
-
----
-
-## Agent Flow Structure
-
-<img width="313" height="643" alt="Prototype Data FLow drawio" src="https://github.com/user-attachments/assets/c9e328d5-0ed5-42fd-8183-b61b129c956d" />
-
-
----
-
-## Internal Tools
-
-**decide_need_rag(query)**  
-Determines whether the query requires external CTI knowledge.
-
-**search_cti(query)**  
-Performs similarity search over CTI documents using vector embeddings and Chroma.
-
-**synthesize_explanation(chunks, query)**  
-Combines retrieved CTI information and generates a clear, grounded explanation.
-
----
-
-## CTI Dataset
-
-The CTI dataset is intentionally small to support effective experimentation.
-
-Dataset characteristics:  
-- 10–20 short documents  
-- Based on authoritative cybersecurity sources  
-- Focused on attack techniques, common threats, and mitigation strategies  
-
-This scope is sufficient to demonstrate RAG functionality and evaluate retrieval quality.
-
----
-
-## RAG Pipeline
-
-- CTI documents are ingested  
-- Text is chunked into manageable segments  
-- Embeddings are generated  
-- Embeddings are stored in Chroma  
-- Relevant chunks are retrieved through similarity search  
-- The LLM synthesises an explanation based on retrieved content  
-
----
-
-## User Interface
-
-The prototype includes a minimal user interface for interaction with the agent.
-
-Features:  
-- Text-based input  
-- Chat-style responses  
-- Streaming output  
-
-The interface prioritises functionality and clarity over visual complexity.
-
----
-
-## Extensibility
-
-The prototype is designed as a foundation for future extension into a multi-agent system.  
-Additional agents can be introduced later without changing the core flow or architecture.
-
----
-
-## Running Instructions
-
-1. Install the required dependencies. NOTE: numpy might not work for new Python version:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Create and populate the vector database:
+3. Copy `.env.example` to `.env` and set:
+   - `OPENROUTER_API_KEY`
+   - `OTX_API_KEY`
+
+### Building and verifying the index
+
+From the `RAG/` directory:
+
 ```bash
-python fill_db.py
+python scripts/build_index.py
+python scripts/verify_index.py
 ```
 
-3. Run the agent and ask questions related to MITRE ATT&CK:
-```bash
-python ask.py
+or, using the helper script on Windows PowerShell:
+
+```powershell
+.\tasks.ps1 build-index
+.\tasks.ps1 verify-index
 ```
 
-If the agent cannot find relevant information in the RAG database, it will return:
+### Running the CLI
+
+From `RAG/`:
+
 ```bash
-I don't know
+python -m rag_system.cli.main
 ```
+
+or:
+
+```powershell
+.\tasks.ps1 run-cli
+```
+
+You can paste:
+
+- MITRE technique IDs (for example `T1047`),
+- system log snippets,
+- IP addresses or file hashes (for OTX enrichment).
+
+The system will classify the input, route to the appropriate agent, and return
+structured JSON with MITRE technique details and/or CTI information.
+
+### Tests
+
+Basic tests live in `tests/` and can be run with:
+
+```bash
+pytest
+```
+
+or:
+
+```powershell
+.\tasks.ps1 run-tests
+```
+

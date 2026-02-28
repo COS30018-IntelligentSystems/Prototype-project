@@ -1,0 +1,8 @@
+{
+  "source_dir": "data",
+  "total_documents": 272,
+  "total_chunks": 2720,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "collection": "mitre_attack",
+  "built_at": "2026-02-27T09:15:13.075925+00:00"
+}

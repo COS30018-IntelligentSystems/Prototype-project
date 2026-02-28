@@ -1,2 +1,3 @@
 RAG/.env
 RAG/__pycache__
+RAG/chroma_db/
