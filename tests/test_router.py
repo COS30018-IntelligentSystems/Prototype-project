@@ -6,7 +6,7 @@ def test_detect_input_type_ip():
 
 
 def test_detect_input_type_hash():
-    assert detect_input_type("Malicious hash: a" * 32) == "hash"
+    assert detect_input_type("Malicious hash:" + "a" * 32) == "hash"
 
 
 def test_detect_input_type_technique():
